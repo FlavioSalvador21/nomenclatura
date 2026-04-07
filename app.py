@@ -2,39 +2,30 @@ import streamlit as st
 import re
 
 def limpar_nome(nome_original):
-    # 1. Remove a extensão do arquivo (.mp4, etc)
+    # 1. Remove a extensão (ex: .mp4)
     nome = re.sub(r'\.[^.]+$', '', nome_original)
     
-    # 2. Remove partes específicas (NA_, VID_, POLI_, - )
-    # Adicione aqui outros termos que queira deletar
-    padroes_remover = [r'_NA_', r'_VID_', r'_POLI_', r'\s-\s']
-    for padrao in padroes_remover:
-        nome = re.sub(padrao, ' ', nome)
+    # 2. Remove os blocos específicos ignorando maiúsculas/minúsculas
+    # O padrão r'_(NA|VID|POLI)_' remove o termo entre underscores
+    termos_para_deletar = [r'_NA_', r'_VID_', r'_POLI_', r'_V\d+_', r'\s-\s']
     
-    # 3. Substitui os underscores restantes por espaços
+    for padrao in termos_para_deletar:
+        nome = re.sub(padrao, '_', nome, flags=re.IGNORECASE)
+    
+    # 3. Substitui todos os underscores por espaços
     nome = nome.replace('_', ' ')
     
-    # 4. Remove espaços duplos extras que podem ter surgido
+    # 4. Limpeza final de espaços duplos
     nome = re.sub(r'\s+', ' ', nome).strip()
     
     return nome
 
-# Interface Streamlit
-st.set_page_config(page_title="Limpador de Nomenclatura", page_icon="📝")
+# --- Interface Streamlit ---
+st.title("✂️ Formatador Pro")
 
-st.title("✂️ Formatador de Nomes de Arquivo")
-st.markdown("Cole o nome original abaixo para gerar a versão limpa.")
-
-# Input do usuário
-entrada = st.text_input("Digite o nome original:", placeholder="W2Y26_FTO_NA_...")
+entrada = st.text_input("Cole o nome do arquivo:", value="W2Y26_FTO_NA_SLOWENGLISHAITUTOR_V5_VID_POLI_BR_V - apa sem hook.mp4")
 
 if entrada:
     resultado = limpar_nome(entrada)
-    
-    st.subheader("Resultado:")
+    st.subheader("Nome Limpo:")
     st.code(resultado, language=None)
-    
-    if st.button("Copiar para área de transferência"):
-        # O Streamlit não tem acesso direto ao clipboard do sistema por segurança, 
-        # mas o componente 'st.code' já oferece um botão de cópia nativo no canto superior direito.
-        st.success("Texto pronto para copiar acima!")
